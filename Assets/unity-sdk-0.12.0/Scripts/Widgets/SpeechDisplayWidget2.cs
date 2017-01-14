@@ -38,6 +38,8 @@ namespace IBM.Watson.DeveloperCloud.Widgets
 		public GameObject cube;
 		public Transform player_transform;
 
+		public GameObject last_created;
+
     #region Inputs
     [SerializeField]
     private Input m_SpeechInput = new Input("SpeechInput", typeof(SpeechToTextData), "OnSpeechInput");
@@ -109,33 +111,39 @@ namespace IBM.Watson.DeveloperCloud.Widgets
 			{
 				string intent = resp.intents[0].intent;
 				UnityEngine.Debug.Log("Intent: " + intent);
-				Material currentMat = null;
-				if (intent == "create")
-				{
-					bool createdObject = false;
-					foreach (EntityResponse entity in resp.entities)
-					{
-						UnityEngine.Debug.Log("entityType: " + entity.entity + " , value: " + entity.value);
+				if (intent == "create") {
+					foreach (EntityResponse entity in resp.entities) {
+						UnityEngine.Debug.Log ("Intent: " + intent + "entityType: " + entity.entity + " , value: " + entity.value);
 
 						if (entity.value == "sphere") {
-							Instantiate (sphere, player_transform.position, Quaternion.identity);
+							last_created = (GameObject)Instantiate (sphere, player_transform.position, Quaternion.identity);
 						}
 						if (entity.value == "cube") {
-							Instantiate (cube, player_transform.position, Quaternion.identity);
+							last_created = (GameObject)Instantiate (cube, player_transform.position, Quaternion.identity);
 						}
-						/*
-                      if (entity.entity == "material")
-                      {
-                          currentMat = gameManager.GetMaterial(entity.value);
-                      } else if (entity.entity == "object")
-                      {
-                          gameManager.CreateObject(entity.value, currentMat);
-                          createdObject = true;
-                          currentMat = null;
-                      } 
-                    */
 					}
 
+				} else if (intent == "destroy") {
+				//	Destroy (last_created);
+				}
+				else if (intent == "color") {
+					if (resp.entities.Length > 0) {
+						string color_name = resp.entities [0].value;
+
+						Color color = Color.black;
+
+						if (color_name == "red")
+							color = Color.red;
+						if(color_name == "yellow")
+							color = Color.yellow;
+						if(color_name == "green")
+							color = Color.green;
+						if(color_name == "blue")
+							color = Color.blue;
+
+						if (color != Color.black)
+							last_created.GetComponent<Renderer> ().material.color = color;
+					}
 				}
 			} else
 			{
